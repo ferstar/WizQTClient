@@ -1,49 +1,49 @@
-# WizNote for Mac/Linux
+### 为知笔记在Ubuntu 18.04上的编译过程
 
+- 装Qt，注意安装的时候要选择桌面开发环境，默认没有选
 
-## cross-platform cloud based note-taking client
-WizNote is an open-sourced project, published under GPLv3 for individual/personal users and custom commercial license for company users.
+http://mirrors.ustc.edu.cn/qtproject/archive/qt/5.9/5.9.0/qt-opensource-linux-x64-5.9.0.run
 
-This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+- 安装一坨依赖
+```shell
+sudo apt-get install git build-essential cmake zlib1g-dev extra-cmake-modules fcitx-libs-dev mesa-common-dev libjasper-dev libxkbcommon-dev
+```
 
+- 克隆源码到本地
+```shell
+cd ~
+mkdir WizTeam
+cd WizTeam
+git clone https://github.com/ferstar/WizQTClient.git
+cd WizQTClient
+git checkout 2.8.2
+```
 
-## Introduction
+- 编译fcitx-qt5解决中文输入问题
+```shell
+git clone https://github.com/fcitx/fcitx-qt5.git
+cd fcitx-qt5 
+cmake .
+make 
+sudo make install
+# 拷贝platforminputcontext/libfcitxplatforminputcontextplugin.so到Qt安装目录的Tools/QtCreator/lib/Qt/plugins/platforminputcontexts目录内
+```
 
-The project is based on Qt, aimed to provide an excellent PKM(personal knowledge management) desktop environment based on cloud usage. At present, we only have Wiz cloud backend(our company) on the table. but we strong encourage developers to contribute to this project to add more cloud backend for different cloud providers like evernote, youdao, etc...even offline usage.
+- 编译打包
+```shell
+chmod a+x linuxdeployqt
+export PATH="$HOME/Qt5.9.0/5.9/gcc_64/bin":$PATH
+./linux-package.sh
+```
 
-PKM should be an very important thing cross through one person's life, it's unwise to stick yourself to a fixed service provider or jump around and leave your collected info/secrets behide. PKM should be the same as your mind, fly over the ocean but never splash the waves.
+- 无法登录的问题
 
-freedom, means knowledge, means PKM, means this WizNote client.
-
-if you are windows or portable platform users, we have WizNote for windows, ios, android from our [Homepage](http://www.wiznote.com)
-
-
-## Compile (Windows, macOS, Linux)
-
-visit: (https://note.wiz.cn/pages/manage/biz/payRead.html?kb=4e2d9734-b669-4b6f-91ad-e056be317cea)
-
-
----
-
-### Install on Mac macOS
-
-[Download](http://www.wiz.cn/wiznote-maclinux.html)
-
-
-### Install on Linux, Windows
-
-Please compile from source.
-
-
-
-*All things done, enjoy!*
-
--------
-
-### 在Windows／macOS／Linux上面编译：
-
-请访问: (https://note.wiz.cn/pages/manage/biz/payRead.html?kb=4e2d9734-b669-4b6f-91ad-e056be317cea)
-
-### 在macOS上面安装：
-
-[Download](http://www.wiz.cn/wiznote-maclinux.html)
+以上步骤成功完成后会生成一个AppImage文件，双击即可运行，但登录会报错`Failed to exec json request, network error=99, message=`
+Google一番发现是openssl库的问题导致其联网同步时安全验证失败,官网上提供了解决方案
+```shell
+sudo apt-get install aptitude
+# 安装aptitude
+sudo aptitude install libssl1.0-dev
+# aptitude会自动解决依赖，这里我们需要降级系统默认的ssl包，选择接受即可
+```
+重新打开为知笔记即可正常登录
